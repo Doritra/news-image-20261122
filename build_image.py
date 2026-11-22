@@ -1,12 +1,12 @@
 """Render the 22 November 2026 world-news front page to entry.png.
 
-One 1024x1024 image, 39 stories reported on Sunday 22 November 2026,
+One 1024x1024 image, 36 stories reported on Sunday 22 November 2026,
 grouped by region and field. All text is drawn programmatically with
 Pillow from the story lists below, so no lettering can be garbled.
 The render is deterministic: fixed palette, fixed fonts, no clock,
 no randomness, no network. Running it twice writes identical bytes.
-Final layout: balanced two columns, 18px story lines, short labels
-in the numbers strip so nothing overflows the page.
+Final layout: balanced two columns, 19px story lines on a 25px
+leading, three softest stories cut so the page breathes.
 """
 
 from pathlib import Path
@@ -56,7 +56,6 @@ SECTIONS_LEFT = [
         "EU and Indonesia sign trade deal after 10 years",
         "South Korea minister quits over AI exam cheating",
         "Japan quake injures 22 in Aichi and Shizuoka",
-        "Okinawa reopens restored Shuri Castle hall",
         "China flies 21 sorties in Taiwan patrols",
         "New Zealand election too close to call",
     ]),
@@ -85,7 +84,6 @@ SECTIONS_RIGHT = [
     ("ECONOMY & TECHNOLOGY", TEAL, [
         "AI sell-off: S&P 500 falls 3.7% into correction",
         "UN AI-weapons talks end, no binding rules",
-        "Iran begins rationing electricity amid crisis",
     ]),
     ("SCIENCE, SPACE & HEALTH", GOLD, [
         "BepiColombo orbits Mercury after 8 years",
@@ -96,7 +94,6 @@ SECTIONS_RIGHT = [
         "Verstappen wins chaotic Las Vegas Grand Prix",
         "Leeds stun Chelsea 4-1, first win there since 1999",
         "France rout Argentina 45-17 to reach final",
-        "Kansas City win their first NWSL title",
         "200 mascots gather for festival in Saitama",
     ]),
 ]
@@ -111,13 +108,13 @@ NUMBERS = [
 
 
 def draw_section(draw, x, y, width, title, colour, items):
-    draw.rectangle([x, y, x + width, y + 26], fill=colour)
-    draw.text((x + 10, y + 4), title, font=font(SANS_B, 17), fill=(255, 255, 255))
-    y += 32
+    draw.rectangle([x, y, x + width, y + 28], fill=colour)
+    draw.text((x + 10, y + 5), title, font=font(SANS_B, 18), fill=(255, 255, 255))
+    y += 34
     for item in items:
-        draw.text((x + 4, y), "\u2022", font=font(SANS_B, 18), fill=colour)
-        draw.text((x + 22, y), item, font=font(SANS, 18), fill=INK)
-        y += 23
+        draw.text((x + 4, y), "\u2022", font=font(SANS_B, 19), fill=colour)
+        draw.text((x + 22, y), item, font=font(SANS, 19), fill=INK)
+        y += 25
     return y + 4
 
 
@@ -129,7 +126,7 @@ def main():
     draw.rectangle([0, 0, W, 118], fill=NAVY)
     draw.text((36, 14), "THE WORLD IN ONE DAY", font=font(SANS_B, 21), fill=(214, 186, 120))
     draw.text((36, 40), "Sunday 22 November 2026", font=font(SERIF_B, 46), fill=(255, 255, 255))
-    draw.text((36, 94), "39 stories  \u00b7  every region  \u00b7  one page", font=font(SANS, 16), fill=(196, 208, 224))
+    draw.text((36, 94), "36 stories  \u00b7  every region  \u00b7  one page", font=font(SANS, 16), fill=(196, 208, 224))
     draw.text((812, 48), "22 NOV", font=font(SERIF_B, 34), fill=(255, 255, 255))
     draw.text((812, 86), "2026", font=font(SANS_B, 18), fill=(214, 186, 120))
 
@@ -140,7 +137,7 @@ def main():
     col_w = 312
     for i, (head, body) in enumerate(LEAD):
         x = lx + i * (col_w + 12)
-        draw.text((x, y + 12), head, font=font(SANS_B, 19), fill=RED if i == 0 else INK)
+        draw.text((x, y + 12), head, font=font(SANS_B, 20), fill=RED if i == 0 else INK)
         # wrap body by hand: split into lines of ~34 chars using simple wrap
         words = body.split()
         lines, cur = [], ""
