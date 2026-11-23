@@ -1,12 +1,12 @@
 """Render the 22 November 2026 world-news front page to entry.png.
 
-One 1024x1024 image, 36 stories reported on Sunday 22 November 2026,
+One 1024x1024 image, 39 stories reported on Sunday 22 November 2026,
 grouped by region and field. All text is drawn programmatically with
 Pillow from the story lists below, so no lettering can be garbled.
 The render is deterministic: fixed palette, fixed fonts, no clock,
 no randomness, no network. Running it twice writes identical bytes.
-Final layout: balanced two columns, 19px story lines on a 25px
-leading, three softest stories cut so the page breathes.
+Final layout: full 39-story breadth kept, one dominant lead story,
+every story line a consistent 19px, highest-contrast ink on paper.
 """
 
 from pathlib import Path
@@ -15,8 +15,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 W = 1024
 H = 1024
-PAPER = (247, 243, 234)
-INK = (22, 26, 34)
+PAPER = (250, 248, 241)
+INK = (13, 16, 22)
 MUTED = (92, 96, 104)
 RULE = (196, 188, 168)
 NAVY = (16, 32, 56)
@@ -56,6 +56,7 @@ SECTIONS_LEFT = [
         "EU and Indonesia sign trade deal after 10 years",
         "South Korea minister quits over AI exam cheating",
         "Japan quake injures 22 in Aichi and Shizuoka",
+        "Okinawa reopens restored Shuri Castle hall",
         "China flies 21 sorties in Taiwan patrols",
         "New Zealand election too close to call",
     ]),
@@ -84,6 +85,7 @@ SECTIONS_RIGHT = [
     ("ECONOMY & TECHNOLOGY", TEAL, [
         "AI sell-off: S&P 500 falls 3.7% into correction",
         "UN AI-weapons talks end, no binding rules",
+        "Iran begins rationing electricity amid crisis",
     ]),
     ("SCIENCE, SPACE & HEALTH", GOLD, [
         "BepiColombo orbits Mercury after 8 years",
@@ -94,6 +96,7 @@ SECTIONS_RIGHT = [
         "Verstappen wins chaotic Las Vegas Grand Prix",
         "Leeds stun Chelsea 4-1, first win there since 1999",
         "France rout Argentina 45-17 to reach final",
+        "Kansas City win their first NWSL title",
         "200 mascots gather for festival in Saitama",
     ]),
 ]
@@ -114,7 +117,7 @@ def draw_section(draw, x, y, width, title, colour, items):
     for item in items:
         draw.text((x + 4, y), "\u2022", font=font(SANS_B, 19), fill=colour)
         draw.text((x + 22, y), item, font=font(SANS, 19), fill=INK)
-        y += 25
+        y += 23
     return y + 4
 
 
@@ -126,35 +129,39 @@ def main():
     draw.rectangle([0, 0, W, 118], fill=NAVY)
     draw.text((36, 14), "THE WORLD IN ONE DAY", font=font(SANS_B, 21), fill=(214, 186, 120))
     draw.text((36, 40), "Sunday 22 November 2026", font=font(SERIF_B, 46), fill=(255, 255, 255))
-    draw.text((36, 94), "36 stories  \u00b7  every region  \u00b7  one page", font=font(SANS, 16), fill=(196, 208, 224))
+    draw.text((36, 94), "39 stories  \u00b7  every region  \u00b7  one page", font=font(SANS, 16), fill=(196, 208, 224))
     draw.text((812, 48), "22 NOV", font=font(SERIF_B, 34), fill=(255, 255, 255))
     draw.text((812, 86), "2026", font=font(SANS_B, 18), fill=(214, 186, 120))
 
-    # Lead stories
+    # Lead stories: the first lead dominates, the other two support it
     y = 130
-    draw.rectangle([24, y, W - 24, y + 148], fill=LEAD_BG)
+    draw.rectangle([24, y, W - 24, y + 160], fill=LEAD_BG)
     lx = 40
     col_w = 312
     for i, (head, body) in enumerate(LEAD):
         x = lx + i * (col_w + 12)
-        draw.text((x, y + 12), head, font=font(SANS_B, 20), fill=RED if i == 0 else INK)
-        # wrap body by hand: split into lines of ~34 chars using simple wrap
+        head_size = 23 if i == 0 else 20
+        body_size = 16 if i == 0 else 15
+        body_lh = 21 if i == 0 else 20
+        draw.text((x, y + 12), head, font=font(SANS_B, head_size),
+                  fill=RED if i == 0 else INK)
+        # wrap body by measuring each candidate line at the body size
         words = body.split()
         lines, cur = [], ""
         for wd in words:
             trial = (cur + " " + wd).strip()
-            if draw.textlength(trial, font=font(SANS, 15)) > col_w - 6:
+            if draw.textlength(trial, font=font(SANS, body_size)) > col_w - 6:
                 lines.append(cur)
                 cur = wd
             else:
                 cur = trial
         if cur:
             lines.append(cur)
-        by = y + 44
+        by = y + 46
         for line in lines[:5]:
-            draw.text((x, by), line, font=font(SANS, 15), fill=(52, 56, 64))
-            by += 20
-    y += 160
+            draw.text((x, by), line, font=font(SANS, body_size), fill=(34, 37, 44))
+            by += body_lh
+    y += 172
 
     # Two-column sections
     left_y = y
